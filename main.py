@@ -61,44 +61,45 @@ def detect_shape(img, img_contour):
         epsilon = 0.1 * perimeter
         approx = cv.approxPolyDP(cnt, epsilon, True)
 
+    if len(approx) >= 3 and len(approx) <= 10:
 
-    # Triangle
-    if len(approx) == 3:
-        shape = "triangle"
+        # Triangle
+        if len(approx) == 3:
+            shape = "triangle"
 
-    # Square or rectangle
-    if len(approx) == 4:
-        (x, y, w, h) = cv.boundingRect(approx)
-        ar = w / float(h)
+        # Square or rectangle
+        if len(approx) == 4:
+            (x, y, w, h) = cv.boundingRect(approx)
+            ar = w / float(h)
 
-    # A square will have an aspect ratio that is approximately
-    # equal to one, otherwise, the shape is a rectangle
-        shape = "square" if ar >= 0.95 and ar <= 1.05 else "rectangle"
+        # A square will have an aspect ratio that is approximately
+        # equal to one, otherwise, the shape is a rectangle
+            shape = "square" if ar >= 0.95 and ar <= 1.05 else "rectangle"
 
-    # Pentagon
-    if len(approx) == 5:
-        shape = "pentagon"
+        # Pentagon
+        if len(approx) == 5:
+            shape = "pentagon"
 
-    # Hexagon
-    if len(approx) == 6:
-        shape = "hexagon"
+        # Hexagon
+        if len(approx) == 6:
+            shape = "hexagon"
 
-    # Octagon
-    if len(approx) == 8:
-        shape = "octagon"
+        # Octagon
+        if len(approx) == 8:
+            shape = "octagon"
 
-    # Star
-    if len(approx) == 10:
-        shape = "star"
+        # Star
+        if len(approx) == 10:
+            shape = "star"
 
     # Otherwise assume as circle or oval
     else:
-        shape = "circle"
+       shape = "circle"
     print(shape)
 
-
 while True:
-    img = cv.imread("/home/cintia/Desktop/SZE/3_felev/Gepi_latas/photos/Traffic-sign-road.jpg")
+    #img = cv.imread("/home/cintia/Desktop/SZE/3_felev/Gepi_latas/photos/rectangle.png")
+    img = cv.imread("/home/cintia/Desktop/SZE/3_felev/Gepi_latas/photos/images.png")
 
     # Before converting grayscale, we use blur function in order to reduce noise
     imgBlur = cv.GaussianBlur(img, (5, 5), 0)
@@ -121,16 +122,16 @@ while True:
     img_contour = detect_shape(imgDil, imgContour)
     # Apply hough transform on the image
 
-    gEdges = cv.Laplacian(imgGray, cv.CV_8UC1)
-    circles = cv.HoughCircles(gEdges, cv.HOUGH_GRADIENT, 40, 10, param1=50,param2=60,minRadius=2,maxRadius=15)
-    # Draw detected circles
-    if circles is not None:
-        circles = np.uint16(np.around(circles))
-        for i in circles[0, :]:
-            # Draw outer circle
-            cv.circle(img, (i[0], i[1]), i[2], (0, 255, 0), 2)
-            # Draw inner circle
-            cv.circle(img, (i[0], i[1]), 2, (0, 0, 255), 3)
+#    gEdges = cv.Laplacian(imgGray, cv.CV_8UC1)
+#   circles = cv.HoughCircles(gEdges, cv.HOUGH_GRADIENT, 40, 10, param1=50,param2=60,minRadius=2,maxRadius=15)
+#   # Draw detected circles
+#   if circles is not None:
+#       circles = np.uint16(np.around(circles))
+#       for i in circles[0, :]:
+#           # Draw outer circle
+#           cv.circle(img, (i[0], i[1]), i[2], (0, 255, 0), 2)
+#           # Draw inner circle
+#           cv.circle(img, (i[0], i[1]), 2, (0, 0, 255), 3)
 
 
     imgStack = stack_images(0.8, ([img, imgDil, imgContour]))
