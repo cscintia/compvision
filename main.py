@@ -52,14 +52,16 @@ def stack_images(scale, img_array):
 def detect_shape(img, img_contour):
     # Using CHAIN_APPROX_NONE instead of CHAIN_APPROX_SIMPLE to get more contour points
     contours, hierarchy = cv.findContours(img, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
-
+    largest_area = 0
     for cnt in contours:
         area = cv.contourArea(cnt)
-        if area > 1000:
-            cv.drawContours(img_contour, contours, -1, (217, 223, 29), 5)  # colour: vivid yellow
-        perimeter = cv.arcLength(cnt, True)
-        epsilon = 0.1 * perimeter
-        approx = cv.approxPolyDP(cnt, epsilon, True)
+        if area > largest_area:
+            best_cnt = cnt
+
+    cv.drawContours(img_contour, contours, -1, (29, 223, 217), 5)  # colour: vivid yellow
+    perimeter = cv.arcLength(best_cnt, True)
+    epsilon = 0.1 * perimeter
+    approx = cv.approxPolyDP(best_cnt, epsilon, True)
 
     if len(approx) >= 3 and len(approx) <= 10:
 
@@ -99,7 +101,8 @@ def detect_shape(img, img_contour):
 
 while True:
     #img = cv.imread("/home/cintia/Desktop/SZE/3_felev/Gepi_latas/photos/rectangle.png")
-    img = cv.imread("/home/cintia/Desktop/SZE/3_felev/Gepi_latas/photos/images.png")
+    #img = cv.imread("/home/cintia/Desktop/SZE/3_felev/Gepi_latas/photos/Traffic-sign-road.jpg")
+    img = cv.imread("/home/cintia/Desktop/SZE/3_felev/Gepi_latas/photos/rs1.png")
 
     # Before converting grayscale, we use blur function in order to reduce noise
     imgBlur = cv.GaussianBlur(img, (5, 5), 0)
@@ -119,7 +122,7 @@ while True:
     kernel = np.ones((1, 1))
     imgDil = cv.dilate(imgCanny, kernel, iterations=1)
 
-    img_contour = detect_shape(imgDil, imgContour)
+    detect_shape(imgDil, imgContour)
     # Apply hough transform on the image
 
 #    gEdges = cv.Laplacian(imgGray, cv.CV_8UC1)
@@ -134,7 +137,7 @@ while True:
 #           cv.circle(img, (i[0], i[1]), 2, (0, 0, 255), 3)
 
 
-    imgStack = stack_images(0.8, ([img, imgDil, imgContour]))
+    imgStack = stack_images(0.8, ([img, imgCanny, imgContour]))
 
     # cv.imshow("Result", imgBlur)
     # if cv.waitKey(1) & 0xFF == ord('q'):
