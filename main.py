@@ -49,7 +49,7 @@ def stack_images(scale, img_array):
 
 
 # Detect shapes
-def detect_shape(img, img_contour):
+def detect_shape(img, img_contour, imgOrig):
     # Using CHAIN_APPROX_NONE instead of CHAIN_APPROX_SIMPLE to get more contour points
     contours, hierarchy = cv.findContours(img, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
     largest_area = 0
@@ -99,10 +99,38 @@ def detect_shape(img, img_contour):
        shape = "circle"
     print(shape)
 
+    white = 0
+    yellow = 0
+    red = 0
+    blue = 0
+
+#Detecting colour within the bounding rectangle in a specific line
+    x, y, w, h = cv.boundingRect(best_cnt)
+    print(x, y, w, h)
+    for i in range(y, y+h):
+        #Detecting the colour of each pixel
+        #print(imgOrig[round((x+w)/2),i])
+        if (imgOrig[round((x+w)/2),i][0] >= 222 and imgOrig[round((x+w)/2),i][0] <= 255 and
+            imgOrig[round((x+w)/2),i][1] >= 222 and imgOrig[round((x+w)/2),i][1] <= 255 and
+            imgOrig[round((x+w)/2),i][2] >= 222 and imgOrig[round((x+w)/2),i][2] <= 255):
+            white += 1
+        if (imgOrig[round((x+w)/2),i][0] >= 0 and imgOrig[round((x+w)/2),i][0] <= 55 and
+            imgOrig[round((x+w)/2),i][1] >= 0 and imgOrig[round((x+w)/2),i][1] <= 55 and
+            imgOrig[round((x+w)/2),i][2] >= 200 and imgOrig[round((x+w)/2),i][2] <= 255):
+            red += 1
+        if  (imgOrig[round((x + w) / 2), i][0] >= 200 and imgOrig[round((x + w) / 2), i][0] <= 255 and
+             imgOrig[round((x + w) / 2), i][1] >= 0 and imgOrig[round((x + w) / 2), i][1] <= 55 and
+             imgOrig[round((x + w) / 2), i][2] >= 0 and imgOrig[round((x + w) / 2), i][2] <= 55):
+            blue += 1
+        if  (imgOrig[round((x + w) / 2), i][0] >= 0 and imgOrig[round((x + w) / 2), i][0] <= 55 and
+             imgOrig[round((x + w) / 2), i][1] >= 200 and imgOrig[round((x + w) / 2), i][1] <= 255 and
+             imgOrig[round((x + w) / 2), i][2] >= 200 and imgOrig[round((x + w) / 2), i][2] <= 255):
+            yellow += 1
+    print(white, red, blue, yellow)
 while True:
     #img = cv.imread("/home/cintia/Desktop/SZE/3_felev/Gepi_latas/photos/rectangle.png")
     #img = cv.imread("/home/cintia/Desktop/SZE/3_felev/Gepi_latas/photos/Traffic-sign-road.jpg")
-    img = cv.imread("/home/cintia/Desktop/SZE/3_felev/Gepi_latas/photos/rs1.png")
+    img = cv.imread("/home/cintia/Desktop/SZE/3_felev/Gepi_latas/photos/images.png")
 
     # Before converting grayscale, we use blur function in order to reduce noise
     imgBlur = cv.GaussianBlur(img, (5, 5), 0)
@@ -122,7 +150,7 @@ while True:
     kernel = np.ones((1, 1))
     imgDil = cv.dilate(imgCanny, kernel, iterations=1)
 
-    detect_shape(imgDil, imgContour)
+    detect_shape(imgDil, imgContour, img)
     # Apply hough transform on the image
 
 #    gEdges = cv.Laplacian(imgGray, cv.CV_8UC1)
