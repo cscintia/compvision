@@ -1,15 +1,9 @@
 import numpy as np
 import cv2 as cv
-
-
-def empty(x):
-    pass
-
-
-cv.namedWindow("Parameters")
-cv.resizeWindow("Parameters", 640, 240)
-cv.createTrackbar("Threshold1", "Parameters", 190, 255, empty)
-cv.createTrackbar("Threshold2", "Parameters", 230, 255, empty)
+import random as rng
+import tkinter as tk
+from tkinter import filedialog
+rng.seed(12345)
 
 
 # Stacking images together
@@ -49,34 +43,39 @@ def stack_images(scale, img_array):
 
 
 # Detect shapes
-def detect_shape(img, img_contour, imgOrig):
+def detect_shape(img_dil, img_contour, img_orig):
     # Using CHAIN_APPROX_NONE instead of CHAIN_APPROX_SIMPLE to get more contour points
-    contours, hierarchy = cv.findContours(img, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
+    contours, hierarchy = cv.findContours(img_dil, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
     largest_area = 0
+    best_cnt = contours[0]
     for cnt in contours:
         area = cv.contourArea(cnt)
         if area > largest_area:
+            largest_area = area
             best_cnt = cnt
 
-    cv.drawContours(img_contour, contours, -1, (29, 223, 217), 5)  # colour: vivid yellow
+    cv.drawContours(img_contour, best_cnt, -1, (29, 223, 217), 5)  # colour: vivid yellow
+    
     perimeter = cv.arcLength(best_cnt, True)
-    epsilon = 0.1 * perimeter
+    old_value = perimeter
+    old_min = 0
+    new_max = 100
+    new_min = 3
+    old_max = 10000
+    epsilon = (((old_value - old_min) * (new_max - new_min)) / (old_max - old_min)) + new_min
+    print(epsilon)
     approx = cv.approxPolyDP(best_cnt, epsilon, True)
 
+    shape = "Undetected"
     if len(approx) >= 3 and len(approx) <= 10:
 
         # Triangle
         if len(approx) == 3:
             shape = "triangle"
 
-        # Square or rectangle
+        # Rectangle
         if len(approx) == 4:
-            (x, y, w, h) = cv.boundingRect(approx)
-            ar = w / float(h)
-
-        # A square will have an aspect ratio that is approximately
-        # equal to one, otherwise, the shape is a rectangle
-            shape = "square" if ar >= 0.95 and ar <= 1.05 else "rectangle"
+            shape = "rectangle"
 
         # Pentagon
         if len(approx) == 5:
@@ -96,7 +95,7 @@ def detect_shape(img, img_contour, imgOrig):
 
     # Otherwise assume as circle or oval
     else:
-       shape = "circle"
+        shape = "circle"
     print(shape)
 
     white = 0
@@ -104,72 +103,99 @@ def detect_shape(img, img_contour, imgOrig):
     red = 0
     blue = 0
 
-#Detecting colour within the bounding rectangle in a specific line
+    # Detecting colour within the bounding rectangle in a specific line
     x, y, w, h = cv.boundingRect(best_cnt)
-    print(x, y, w, h)
+    color = (rng.randint(0, 256), rng.randint(0, 256), rng.randint(0, 256))
+    cv.rectangle(img_contour, (x, y, w, h), color, 2)
     for i in range(y, y+h):
-        #Detecting the colour of each pixel
-        #print(imgOrig[round((x+w)/2),i])
-        if (imgOrig[round((x+w)/2),i][0] >= 222 and imgOrig[round((x+w)/2),i][0] <= 255 and
-            imgOrig[round((x+w)/2),i][1] >= 222 and imgOrig[round((x+w)/2),i][1] <= 255 and
-            imgOrig[round((x+w)/2),i][2] >= 222 and imgOrig[round((x+w)/2),i][2] <= 255):
+        # Detecting the colour of each pixel in a specific line
+        if (img_orig[i, round(x+w/2)][0] >= 200 and img_orig[i, round(x+w/2)][0] <= 255 and
+                img_orig[i, round(x+w/2)][1] >= 200 and img_orig[i, round(x+w/2)][1] <= 255 and
+                img_orig[i, round(x+w/2)][2] >= 200 and img_orig[i, round(x+w/2)][2] <= 255):
             white += 1
-        if (imgOrig[round((x+w)/2),i][0] >= 0 and imgOrig[round((x+w)/2),i][0] <= 55 and
-            imgOrig[round((x+w)/2),i][1] >= 0 and imgOrig[round((x+w)/2),i][1] <= 55 and
-            imgOrig[round((x+w)/2),i][2] >= 200 and imgOrig[round((x+w)/2),i][2] <= 255):
+        if (img_orig[i, round(x+w/2)][2] >= 150 and img_orig[i, round(x+w/2)][2] <= 255 and
+                img_orig[i, round(x+w/2)][1] >= 0 and img_orig[i, round(x+w/2)][1] <= 100 and
+                img_orig[i, round(x+w/2)][0] >= 0 and img_orig[i, round(x+w/2)][0] <= 100):
             red += 1
-        if  (imgOrig[round((x + w) / 2), i][0] >= 200 and imgOrig[round((x + w) / 2), i][0] <= 255 and
-             imgOrig[round((x + w) / 2), i][1] >= 0 and imgOrig[round((x + w) / 2), i][1] <= 55 and
-             imgOrig[round((x + w) / 2), i][2] >= 0 and imgOrig[round((x + w) / 2), i][2] <= 55):
+        if (img_orig[i, round(x + w / 2)][0] >= 200 and img_orig[i, round(x + w / 2)][0] <= 255 and
+                img_orig[i, round(x + w / 2)][2] >= 0 and img_orig[i, round(x + w / 2)][2] <= 100 and
+                img_orig[i, round(x + w / 2)][1] >= 0 and img_orig[i, round(x + w / 2)][1] <= 100):
             blue += 1
-        if  (imgOrig[round((x + w) / 2), i][0] >= 0 and imgOrig[round((x + w) / 2), i][0] <= 55 and
-             imgOrig[round((x + w) / 2), i][1] >= 200 and imgOrig[round((x + w) / 2), i][1] <= 255 and
-             imgOrig[round((x + w) / 2), i][2] >= 200 and imgOrig[round((x + w) / 2), i][2] <= 255):
+        if (img_orig[i, round(x + w / 2)][0] >= 0 and img_orig[i, round(x + w / 2)][0] <= 55 and
+                img_orig[i, round(x + w / 2)][1] >= 155 and img_orig[i, round(x + w / 2)][1] <= 200 and
+                img_orig[i, round(x + w / 2)][2] >= 200 and img_orig[i, round(x + w / 2)][2] <= 255):
             yellow += 1
+    if shape != "triangle" and shape != "circle" and shape != "octagon":
+        for i in range(x, x+w):
+            # Detecting the colour of each pixel in a specific line
+            if (img_orig[round(y+h/2), i][0] >= 200 and img_orig[round(y+h/2), i][0] <= 255 and
+                    img_orig[round(y+h/2), i][1] >= 200 and img_orig[round(y+h/2), i][1] <= 255 and
+                    img_orig[round(y+h/2), i][2] >= 200 and img_orig[round(y+h/2), i][2] <= 255):
+                white += 1
+            if (img_orig[round(y+h/2), i][2] >= 150 and img_orig[round(y+h/2), i][2] <= 255 and
+                    img_orig[round(y+h/2), i][1] >= 0 and img_orig[round(y+h/2), i][1] <= 100 and
+                    img_orig[round(y+h/2), i][0] >= 0 and img_orig[round(y+h/2), i][0] <= 100):
+                red += 1
+            if (img_orig[round(y+h/2), i][0] >= 200 and img_orig[round(y+h/2), i][0] <= 255 and
+                    img_orig[round(y+h/2), i][2] >= 0 and img_orig[round(y+h/2), i][2] <= 100 and
+                    img_orig[round(y+h/2), i][1] >= 0 and img_orig[round(y+h/2), i][1] <= 100):
+                blue += 1
+            if (img_orig[round(y+h/2), i][0] >= 0 and img_orig[round(y+h/2), i][0] <= 55 and
+                    img_orig[round(y+h/2), i][1] >= 155 and img_orig[round(y+h/2), i][1] <= 200 and
+                    img_orig[round(y+h/2), i][2] >= 200 and img_orig[round(y+h/2), i][2] <= 255):
+                yellow += 1
+
     print(white, red, blue, yellow)
-while True:
-    #img = cv.imread("/home/cintia/Desktop/SZE/3_felev/Gepi_latas/photos/rectangle.png")
-    #img = cv.imread("/home/cintia/Desktop/SZE/3_felev/Gepi_latas/photos/Traffic-sign-road.jpg")
-    img = cv.imread("/home/cintia/Desktop/SZE/3_felev/Gepi_latas/photos/images.png")
 
-    # Before converting grayscale, we use blur function in order to reduce noise
-    imgBlur = cv.GaussianBlur(img, (5, 5), 0)
-
-    # Converting colour from RGB (Blur version) into gray
-    imgGray = cv.cvtColor(imgBlur, cv.COLOR_BGR2GRAY)
-
-    imgContour = img.copy()
-
-    threshold1 = cv.getTrackbarPos("Threshold1", "Parameters")
-    threshold2 = cv.getTrackbarPos("Threshold2", "Parameters")
-
-    # Detecting edges
-    imgCanny = cv.Canny(imgGray, threshold1, threshold2)
-
-    # Removing other noises
-    kernel = np.ones((1, 1))
-    imgDil = cv.dilate(imgCanny, kernel, iterations=1)
-
-    detect_shape(imgDil, imgContour, img)
-    # Apply hough transform on the image
-
-#    gEdges = cv.Laplacian(imgGray, cv.CV_8UC1)
-#   circles = cv.HoughCircles(gEdges, cv.HOUGH_GRADIENT, 40, 10, param1=50,param2=60,minRadius=2,maxRadius=15)
-#   # Draw detected circles
-#   if circles is not None:
-#       circles = np.uint16(np.around(circles))
-#       for i in circles[0, :]:
-#           # Draw outer circle
-#           cv.circle(img, (i[0], i[1]), i[2], (0, 255, 0), 2)
-#           # Draw inner circle
-#           cv.circle(img, (i[0], i[1]), 2, (0, 0, 255), 3)
+    road_sign = "Undetected"
+    if shape == "circle":
+        if white > blue and white > yellow and red > white and white > 0 and red >= ((white+red+blue+yellow)/2):
+            road_sign = "No Entry"
+    if shape == "octagon":
+        if red > blue and red > yellow and red > white and red >= ((white+red+blue+yellow)/1.5):
+            road_sign = "Stop"
+    if shape == "rectangle":
+        if white > blue and white > red and yellow > white and white > 0 and yellow >= ((white+red+blue+yellow)/3):
+            road_sign = "Main Road"
+        if (white > yellow and red > yellow and blue > white and blue > red and
+                white > 0 and red > 0 and blue >= ((white+red+blue+yellow)/3)):
+            road_sign = "No Through"
+    if shape == "triangle":
+        if red > blue and red > yellow and white > red and red > 0 and white >= ((white+red+blue+yellow)/3):
+            road_sign = "Yield"
+    print(road_sign)
 
 
-    imgStack = stack_images(0.8, ([img, imgCanny, imgContour]))
+root = tk.Tk()
+root.withdraw()
 
-    # cv.imshow("Result", imgBlur)
-    # if cv.waitKey(1) & 0xFF == ord('q'):
-    #    break
-    cv.imshow("Result", imgStack)
+file_path = filedialog.askopenfilename()
+
+img = cv.imread(file_path)
+
+# Before converting grayscale, we use bilateralFilter function in order to reduce noise
+dst = cv.bilateralFilter(img, 10, 60, 60)
+
+# Converting colour from RGB (Blur version) into gray
+imgGray = cv.cvtColor(dst, cv.COLOR_BGR2GRAY)
+
+imgContour = img.copy()
+
+threshold1 = 190
+threshold2 = 230
+
+# Detecting edges
+imgCanny = cv.Canny(imgGray, threshold1, threshold2)
+
+# Removing other noises
+kernel = np.ones((1, 1))
+imgDil = cv.dilate(imgCanny, kernel, iterations=1)
+
+detect_shape(imgDil, imgContour, img)
+
+imgStack = stack_images(0.8, ([img, imgCanny, imgContour]))
+
+cv.imshow("Result", imgStack)
+while 1:
     if cv.waitKey(1) & 0xFF == ord('q'):
         break
