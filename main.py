@@ -109,39 +109,39 @@ def detect_shape(img_dil, img_contour, img_orig):
     cv.rectangle(img_contour, (x, y, w, h), color, 2)
     for i in range(y, y+h):
         # Detecting the colour of each pixel in a specific line
-        if (img_orig[i, round(x+w/2)][0] >= 200 and img_orig[i, round(x+w/2)][0] <= 255 and
-                img_orig[i, round(x+w/2)][1] >= 200 and img_orig[i, round(x+w/2)][1] <= 255 and
-                img_orig[i, round(x+w/2)][2] >= 200 and img_orig[i, round(x+w/2)][2] <= 255):
+        if (img_orig[i, round(x+w/2)][0] >= 175 and img_orig[i, round(x+w/2)][0] <= 255 and
+                img_orig[i, round(x+w/2)][1] >= 175 and img_orig[i, round(x+w/2)][1] <= 255 and
+                img_orig[i, round(x+w/2)][2] >= 175 and img_orig[i, round(x+w/2)][2] <= 255):
             white += 1
         if (img_orig[i, round(x+w/2)][2] >= 150 and img_orig[i, round(x+w/2)][2] <= 255 and
                 img_orig[i, round(x+w/2)][1] >= 0 and img_orig[i, round(x+w/2)][1] <= 100 and
                 img_orig[i, round(x+w/2)][0] >= 0 and img_orig[i, round(x+w/2)][0] <= 100):
             red += 1
-        if (img_orig[i, round(x + w / 2)][0] >= 200 and img_orig[i, round(x + w / 2)][0] <= 255 and
+        if (img_orig[i, round(x + w / 2)][0] >= 175 and img_orig[i, round(x + w / 2)][0] <= 255 and
                 img_orig[i, round(x + w / 2)][2] >= 0 and img_orig[i, round(x + w / 2)][2] <= 100 and
-                img_orig[i, round(x + w / 2)][1] >= 0 and img_orig[i, round(x + w / 2)][1] <= 100):
+                img_orig[i, round(x + w / 2)][1] >= 0 and img_orig[i, round(x + w / 2)][1] <= 125):
             blue += 1
-        if (img_orig[i, round(x + w / 2)][0] >= 0 and img_orig[i, round(x + w / 2)][0] <= 55 and
-                img_orig[i, round(x + w / 2)][1] >= 155 and img_orig[i, round(x + w / 2)][1] <= 200 and
+        if (img_orig[i, round(x + w / 2)][0] >= 0 and img_orig[i, round(x + w / 2)][0] <= 100 and
+                img_orig[i, round(x + w / 2)][1] >= 125 and img_orig[i, round(x + w / 2)][1] <= 255 and
                 img_orig[i, round(x + w / 2)][2] >= 200 and img_orig[i, round(x + w / 2)][2] <= 255):
             yellow += 1
     if shape != "triangle" and shape != "circle" and shape != "octagon":
         for i in range(x, x+w):
             # Detecting the colour of each pixel in a specific line
-            if (img_orig[round(y+h/2), i][0] >= 200 and img_orig[round(y+h/2), i][0] <= 255 and
-                    img_orig[round(y+h/2), i][1] >= 200 and img_orig[round(y+h/2), i][1] <= 255 and
-                    img_orig[round(y+h/2), i][2] >= 200 and img_orig[round(y+h/2), i][2] <= 255):
+            if (img_orig[round(y+h/2), i][0] >= 175 and img_orig[round(y+h/2), i][0] <= 255 and
+                    img_orig[round(y+h/2), i][1] >= 175 and img_orig[round(y+h/2), i][1] <= 255 and
+                    img_orig[round(y+h/2), i][2] >= 175 and img_orig[round(y+h/2), i][2] <= 255):
                 white += 1
             if (img_orig[round(y+h/2), i][2] >= 150 and img_orig[round(y+h/2), i][2] <= 255 and
                     img_orig[round(y+h/2), i][1] >= 0 and img_orig[round(y+h/2), i][1] <= 100 and
                     img_orig[round(y+h/2), i][0] >= 0 and img_orig[round(y+h/2), i][0] <= 100):
                 red += 1
-            if (img_orig[round(y+h/2), i][0] >= 200 and img_orig[round(y+h/2), i][0] <= 255 and
+            if (img_orig[round(y+h/2), i][0] >= 175 and img_orig[round(y+h/2), i][0] <= 255 and
                     img_orig[round(y+h/2), i][2] >= 0 and img_orig[round(y+h/2), i][2] <= 100 and
-                    img_orig[round(y+h/2), i][1] >= 0 and img_orig[round(y+h/2), i][1] <= 100):
+                    img_orig[round(y+h/2), i][1] >= 0 and img_orig[round(y+h/2), i][1] <= 125):
                 blue += 1
-            if (img_orig[round(y+h/2), i][0] >= 0 and img_orig[round(y+h/2), i][0] <= 55 and
-                    img_orig[round(y+h/2), i][1] >= 155 and img_orig[round(y+h/2), i][1] <= 200 and
+            if (img_orig[round(y+h/2), i][0] >= 0 and img_orig[round(y+h/2), i][0] <= 100 and
+                    img_orig[round(y+h/2), i][1] >= 125 and img_orig[round(y+h/2), i][1] <= 255 and
                     img_orig[round(y+h/2), i][2] >= 200 and img_orig[round(y+h/2), i][2] <= 255):
                 yellow += 1
 
@@ -157,8 +157,8 @@ def detect_shape(img_dil, img_contour, img_orig):
     if shape == "rectangle":
         if white > blue and white > red and yellow > white and white > 0 and yellow >= ((white+red+blue+yellow)/3):
             road_sign = "Main Road"
-        if (white > yellow and red > yellow and blue > white and blue > red and
-                white > 0 and red > 0 and blue >= ((white+red+blue+yellow)/3)):
+        if (white > yellow and red > yellow and blue > red and
+                white > 0 and red > 0 and blue >= ((white+red+blue+yellow)/4)):
             road_sign = "No Through"
     if shape == "triangle":
         if red > blue and red > yellow and white > red and red > 0 and white >= ((white+red+blue+yellow)/3):
